@@ -1,28 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Hello World</title>
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background: #f5f5f5;
-      font-family: Arial, sans-serif;
-    }
-    h1 {
-      color: #333;
-    }
-  </style>
-</head>
-<body>
-  <h1>Hello World Render frontend</h1>
+<script>
+  const buttons = document.querySelectorAll('#buttons-container button');
+  const output = document.getElementById('selection-output');
 
-  <script>
-    console.log("Hello World loaded successfully!");
-  </script>
-</body>
-</html>
+  buttons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const topic = btn.getAttribute('data-topic');
+      output.textContent = `You selected: ${topic}`;
+
+      try {
+        const res = await fetch('http://localhost:3000/select-topic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic })
+        });
+        const data = await res.json();
+        console.log(data.message);
+        output.textContent += `\n${data.message}`;
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  });
+</script>
