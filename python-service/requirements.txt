@@ -3,3 +3,6 @@ uvicorn
 requests
 pinecone-client
 google-generativeai
+python-dotenv
+pydantic
+httpx
