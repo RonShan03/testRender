@@ -1,6 +1,12 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import fetch from 'node-fetch';
+import { fileURLToPath } from 'url';
+
+// Recreate __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const port = process.env.PORT || 3000;
 
@@ -10,7 +16,7 @@ const server = http.createServer((req, res) => {
 
   // Serve the frontend HTML
   if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html')) {
-    const filePath = path.join(__dirname, 'public', 'index.html'); // your frontend file
+    const filePath = path.join(__dirname, 'public', 'index.html');
     fs.readFile(filePath, (err, data) => {
       if (err) {
         res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -26,21 +32,41 @@ const server = http.createServer((req, res) => {
   else if (req.method === 'POST' && req.url === '/select-topic') {
     let body = '';
     req.on('data', chunk => { body += chunk.toString(); });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const data = JSON.parse(body);
-        const topic = data.topic || 'Unknown';
-        const response = { message: `Server received your selection: ${topic}` };
+
+        // Forward request to Python microservice
+        const pyRes = await fetch('http://localhost:5000/process-topic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const pyData = await pyRes.json();
+
+        let messageText;
+
+        if (pyData.message?.parts && pyData.message.parts[0]?.text) {
+          messageText = pyData.message.parts[0].text;
+        } else if (typeof pyData.message === 'string') {
+          messageText = pyData.message;
+        } else {
+          messageText = "Error fetching description";
+        }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(response));
+        res.end(JSON.stringify({ message: messageText }));
+
+
       } catch (err) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Invalid JSON' }));
+        console.error(err);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Error contacting Python service' }));
       }
     });
-
   } 
+
   // Catch-all for other routes
   else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
