@@ -28,7 +28,7 @@
       margin-top: 30px;
       font-size: 18px;
       color: #555;
-      white-space: pre-line; /* keep line breaks from JS */
+      white-space: pre-line;
     }
   </style>
 </head>
@@ -47,32 +47,30 @@
   <div id="selection-output"></div>
 
   <script>
-    console.log("Frontend loaded successfully!");
+  const buttons = document.querySelectorAll('#buttons-container button');
+  const output = document.getElementById('selection-output');
 
-    const buttons = document.querySelectorAll('#buttons-container button');
-    const output = document.getElementById('selection-output');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const topic = btn.getAttribute('data-topic');
+      output.textContent = `You selected: ${topic}`;
 
-    buttons.forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const topic = btn.getAttribute('data-topic');
-        output.textContent = `You selected: ${topic}`;
+      try {
+        const res = await fetch('/select-topic', {  // relative path
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic })
+        });
 
-        try {
-          // Replace localhost with your deployed backend URL on Render
-          const res = await fetch('http://localhost:3000/select-topic', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic })
-          });
-
-          const data = await res.json();
-          output.textContent += `\n${data.message}`;
-        } catch (err) {
-          console.error(err);
-          output.textContent += `\nCould not contact server.`;
-        }
-      });
+        const data = await res.json();
+        output.textContent += `\n${data.message}`;
+      } catch (err) {
+        console.error(err);
+        output.textContent += `\nCould not contact server.`;
+      }
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
