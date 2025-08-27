@@ -39,7 +39,7 @@ async def process_topic(req: TopicRequest):
         "X-goog-api-key": GEMINI_API_KEY
     }
     payload = {
-        "contents": [{"parts": [{"text": f"Give a short 1-2 sentence description about {topic} in DSA"}]}]
+        "contents": [{"parts": [{"text": f"Give a short 6-8 sentence description about {topic} in DSA"}]}]
     }
 
     response = requests.post(url, json=payload, headers=headers)
