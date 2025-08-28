@@ -37,7 +37,7 @@ const server = http.createServer((req, res) => {
         const data = JSON.parse(body);
 
         // Forward request to Python microservice
-        const pyRes = await fetch('https://your-python-service.onrender.com/process-topic', {
+        const pyRes = await fetch('https://testrender-1-8n4p.onrender.com/process-topic', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
